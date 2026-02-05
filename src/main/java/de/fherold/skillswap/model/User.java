@@ -35,6 +35,7 @@ public class User {
     private String password;
 
     @Min(0)
+    @Column(columnDefinition = "integer default 5")
     private Integer credits = 5;
 
     @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true)
