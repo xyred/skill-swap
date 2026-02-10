@@ -8,6 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service class responsible for handling skill-related operations, including performing skill swaps between users.
+ * It ensures that the business logic for swapping skills is correctly implemented, such as checking user credits
+ * and preventing users from swapping with themselves.
+ */
+
 @Service
 @RequiredArgsConstructor
 public class SkillService {
