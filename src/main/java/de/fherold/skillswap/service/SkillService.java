@@ -1,5 +1,6 @@
 package de.fherold.skillswap.service;
 
+import de.fherold.skillswap.dto.SkillResponseDTO;
 import de.fherold.skillswap.model.Skill;
 import de.fherold.skillswap.model.User;
 import de.fherold.skillswap.repository.SkillRepository;
@@ -7,6 +8,8 @@ import de.fherold.skillswap.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Service class responsible for handling skill-related operations, including performing skill swaps between users.
@@ -44,5 +47,16 @@ public class SkillService {
 
         userRepository.save(student);
         userRepository.save(provider);
+    }
+
+    public List<SkillResponseDTO> getAllSkills() {
+        return skillRepository.findAll().stream()
+                .map(skill -> new SkillResponseDTO(
+                        skill.getId(),
+                        skill.getTitle(),
+                        skill.getDescription(),
+                        skill.getProvider().getUsername()
+                ))
+                .toList();
     }
 }
