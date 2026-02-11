@@ -57,4 +57,16 @@ class SkillControllerIntegrationTest {
                         .param("skillId", "100"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void shouldFilterSkillsByTitle() throws Exception {
+        mockMvc.perform(get("/api/skills").param("search", "java"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Java Programming"));
+
+        mockMvc.perform(get("/api/skills").param("search", "python"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 }

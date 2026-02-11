@@ -39,9 +39,15 @@ public class SkillController {
         }
     }
 
-    @Operation(summary = "List all available skills", description = "Returns a list of skills with provider names (passwords hidden).")
+    @Operation(summary = "List all skills", description = "Returns all skills, or filters them by title if a search term is provided.")
     @GetMapping
-    public ResponseEntity<List<SkillResponseDTO>> getAllSkills() {
-        return ResponseEntity.ok(skillService.getAllSkills());
+    public ResponseEntity<List<SkillResponseDTO>> getAllSkills(@Parameter(description = "Optional search term to filter skills by title")
+                                                               @RequestParam(required = false) String search) {
+
+        List<SkillResponseDTO> skills = (search != null && !search.isBlank())
+                ? skillService.searchSkillsByTitle(search)
+                : skillService.getAllSkills();
+
+        return ResponseEntity.ok(skills);
     }
 }

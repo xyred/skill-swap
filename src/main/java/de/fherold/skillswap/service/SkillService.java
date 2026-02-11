@@ -59,4 +59,15 @@ public class SkillService {
                 ))
                 .toList();
     }
+
+    public List<SkillResponseDTO> searchSkillsByTitle(String title) {
+        return skillRepository.findByTitleContainingIgnoreCase(title).stream()
+                .map(skill -> new SkillResponseDTO(
+                        skill.getId(),
+                        skill.getTitle(),
+                        skill.getDescription(),
+                        skill.getProvider().getUsername()
+                ))
+                .toList();
+    }
 }

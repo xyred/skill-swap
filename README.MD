@@ -14,7 +14,7 @@ credit system. Instead of paying with money, users trade "Skill Credits" earned 
 ## 🛠 Tech Stack
 
 * **Java 21**
-* **Spring Boot 3.4**
+* **Spring Boot 4.0.2**
 * **Spring Data JPA** (Hibernate)
 * **H2 Database** (In-memory for development)
 * **Swagger/OpenAPI** (SpringDoc)
