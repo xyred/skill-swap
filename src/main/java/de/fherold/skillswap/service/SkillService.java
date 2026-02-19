@@ -1,6 +1,7 @@
 package de.fherold.skillswap.service;
 
 import de.fherold.skillswap.dto.SkillResponseDTO;
+import de.fherold.skillswap.exception.ResourceNotFoundException;
 import de.fherold.skillswap.model.Skill;
 import de.fherold.skillswap.model.User;
 import de.fherold.skillswap.repository.SkillRepository;
@@ -27,10 +28,10 @@ public class SkillService {
     @Transactional
     public void performSwap(Long studentId, Long skillId) {
         User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with ID: " + studentId));
 
         Skill skill = skillRepository.findById(skillId)
-                .orElseThrow(() -> new IllegalArgumentException("Skill not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + skillId));
 
         User provider = skill.getProvider();
 

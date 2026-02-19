@@ -69,4 +69,13 @@ class SkillControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
+
+    @Test
+    void shouldReturnCustomErrorWhenSkillNotFound() throws Exception {
+        mockMvc.perform(get("/api/skills/999")) // ID 999 doesn't exist
+                .andExpect(status().isNotFound()) // Verify it's 404
+                .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
 }
