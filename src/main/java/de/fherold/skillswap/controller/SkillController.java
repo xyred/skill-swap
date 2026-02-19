@@ -31,12 +31,13 @@ public class SkillController {
             @Parameter(description = "ID of the student receiving the skill") @RequestParam Long studentId,
             @Parameter(description = "ID of the skill being learned") @RequestParam Long skillId) {
 
-        try {
-            skillService.performSwap(studentId, skillId);
-            return ResponseEntity.ok("Swap successful!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        skillService.performSwap(studentId, skillId);
+        return ResponseEntity.ok("Swap successful!");
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SkillResponseDTO> getSkillById(@PathVariable Long id) {
+        return ResponseEntity.ok(skillService.getSkillById(id));
     }
 
     @Operation(summary = "List all skills", description = "Returns all skills, or filters them by title if a search term is provided.")

@@ -71,4 +71,15 @@ public class SkillService {
                 ))
                 .toList();
     }
+
+    public SkillResponseDTO getSkillById(Long id) {
+        return skillRepository.findById(id)
+                .map(skill -> new SkillResponseDTO(
+                        skill.getId(),
+                        skill.getTitle(),
+                        skill.getDescription(),
+                        skill.getProvider().getUsername()
+                ))
+                .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + id));
+    }
 }

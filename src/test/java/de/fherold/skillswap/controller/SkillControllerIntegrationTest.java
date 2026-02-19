@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class SkillControllerIntegrationTest {
 
     @Autowired
@@ -47,15 +49,17 @@ class SkillControllerIntegrationTest {
                         .param("studentId", "1")
                         .param("skillId", "100"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Student does not have enough credits"));
+                .andExpect(jsonPath("$.message").value("Student does not have enough credits"))
+                .andExpect(jsonPath("$.errorCode").value("BUSINESS_RULE_VIOLATION"));
     }
 
     @Test
-    void shouldReturn400IfUserDoesNotExist() throws Exception {
+    void shouldReturn404IfUserDoesNotExist() throws Exception {
         mockMvc.perform(post("/api/skills/swap")
                         .param("studentId", "999")
                         .param("skillId", "100"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"));
     }
 
     @Test
