@@ -23,20 +23,21 @@ public class User {
     private Long id;
 
     @NotBlank(message = "Username is required")
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email is required")
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank(message = "Password is required")
+    @Column(nullable = false)
     private String password;
 
     @Min(0)
-    @Column(columnDefinition = "integer default 5")
-    private Integer credits = 5;
+    @Column(nullable = false)
+    private int credits = 5;
 
     @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Skill> skills = new ArrayList<>();
