@@ -10,7 +10,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @DataJpaTest
 class SkillRepositoryTest {
@@ -24,8 +23,8 @@ class SkillRepositoryTest {
     @DisplayName("Should find skills by provider")
     void shouldLinkSkillToUser() {
         User provider = new User();
-        provider.setUsername("teacher_tom");
-        provider.setEmail("tom@test.com");
+        provider.setUsername("test_teacher");
+        provider.setEmail("test_teacher@test.com");
         provider.setPassword("password");
         userRepository.save(provider);
 
@@ -36,8 +35,9 @@ class SkillRepositoryTest {
 
         skillRepository.save(skill);
 
-        List<Skill> allSkills = skillRepository.findAll();
-        assertFalse(allSkills.isEmpty());
-        assertEquals("teacher_tom", allSkills.getFirst().getProvider().getUsername());
+        List<Skill> foundSkills = skillRepository.findByTitleContainingIgnoreCase("Spring Boot Basics");
+
+        assertEquals(1, foundSkills.size(), "Should find exactly the skill we just created");
+        assertEquals("test_teacher", foundSkills.getFirst().getProvider().getUsername(), "Provider's username should match");
     }
 }
