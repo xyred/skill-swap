@@ -19,14 +19,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessLogicError(IllegalStateException ex) {
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessLogicError(BusinessRuleException ex) {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
                 ex.getMessage(),
                 "BUSINESS_RULE_VIOLATION"
         );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST); // 400 Bad Request
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
