@@ -31,7 +31,7 @@ class SkillControllerIntegrationTest {
     void shouldPerformSuccessfulSwap() throws Exception {
         mockMvc.perform(post("/api/skills/swap")
                         .param("studentId", "1")
-                        .param("skillId", "100"))
+                        .param("skillId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Swap successful!"));
     }
@@ -41,13 +41,13 @@ class SkillControllerIntegrationTest {
         for (int i = 0; i < 5; i++) {
             mockMvc.perform(post("/api/skills/swap")
                             .param("studentId", "1")
-                            .param("skillId", "100"))
+                            .param("skillId", "1"))
                     .andExpect(status().isOk());
         }
 
         mockMvc.perform(post("/api/skills/swap")
                         .param("studentId", "1")
-                        .param("skillId", "100"))
+                        .param("skillId", "1"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Student does not have enough credits"))
                 .andExpect(jsonPath("$.errorCode").value("BUSINESS_RULE_VIOLATION"));
@@ -57,7 +57,7 @@ class SkillControllerIntegrationTest {
     void shouldReturn404IfUserDoesNotExist() throws Exception {
         mockMvc.perform(post("/api/skills/swap")
                         .param("studentId", "999")
-                        .param("skillId", "100"))
+                        .param("skillId", "1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"));
     }
