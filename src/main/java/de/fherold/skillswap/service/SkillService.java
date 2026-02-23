@@ -52,34 +52,28 @@ public class SkillService {
 
     public List<SkillResponseDTO> getAllSkills() {
         return skillRepository.findAll().stream()
-                .map(skill -> new SkillResponseDTO(
-                        skill.getId(),
-                        skill.getTitle(),
-                        skill.getDescription(),
-                        skill.getProvider().getUsername()
-                ))
+                .map(this::mapToDTO)
                 .toList();
     }
 
     public List<SkillResponseDTO> searchSkillsByTitle(String title) {
         return skillRepository.findByTitleContainingIgnoreCase(title).stream()
-                .map(skill -> new SkillResponseDTO(
-                        skill.getId(),
-                        skill.getTitle(),
-                        skill.getDescription(),
-                        skill.getProvider().getUsername()
-                ))
+                .map(this::mapToDTO)
                 .toList();
     }
 
     public SkillResponseDTO getSkillById(Long id) {
         return skillRepository.findById(id)
-                .map(skill -> new SkillResponseDTO(
-                        skill.getId(),
-                        skill.getTitle(),
-                        skill.getDescription(),
-                        skill.getProvider().getUsername()
-                ))
+                .map(this::mapToDTO)
                 .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + id));
+    }
+
+    private SkillResponseDTO mapToDTO(Skill skill) {
+        return new SkillResponseDTO(
+                skill.getId(),
+                skill.getTitle(),
+                skill.getDescription(),
+                skill.getProvider().getUsername()
+        );
     }
 }
