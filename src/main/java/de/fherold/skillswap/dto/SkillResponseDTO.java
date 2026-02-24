@@ -1,9 +1,9 @@
 package de.fherold.skillswap.dto;
 
 public record SkillResponseDTO(
-        Long Id,
+        Long id,
         String title,
         String description,
-        String ProviderName
+        String providerName
 ) {
 }
