@@ -1,6 +1,7 @@
 package de.fherold.skillswap.service;
 
 import de.fherold.skillswap.dto.SkillResponseDTO;
+import de.fherold.skillswap.exception.BusinessRuleException;
 import de.fherold.skillswap.exception.ResourceNotFoundException;
 import de.fherold.skillswap.model.Skill;
 import de.fherold.skillswap.model.User;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SkillService {
 
     private final SkillRepository skillRepository;
@@ -36,11 +38,11 @@ public class SkillService {
         User provider = skill.getProvider();
 
         if (student.getCredits() <= 0) {
-            throw new IllegalStateException("Student does not have enough credits");
+            throw new BusinessRuleException("Student does not have enough credits");
         }
 
         if (student.getId().equals(provider.getId())) {
-            throw new IllegalStateException("Student cannot swap with themselves");
+            throw new BusinessRuleException("Student cannot swap with themselves");
         }
 
         student.setCredits(student.getCredits() - 1);
@@ -57,6 +59,10 @@ public class SkillService {
     }
 
     public List<SkillResponseDTO> searchSkillsByTitle(String title) {
+        if (title == null || title.isBlank()) {
+            return getAllSkills();
+        }
+
         return skillRepository.findByTitleContainingIgnoreCase(title).stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -73,7 +79,7 @@ public class SkillService {
                 skill.getId(),
                 skill.getTitle(),
                 skill.getDescription(),
-                skill.getProvider().getUsername()
+                skill.getProvider() != null ? skill.getProvider().getUsername() : "Unknown Provider"
         );
     }
 }
