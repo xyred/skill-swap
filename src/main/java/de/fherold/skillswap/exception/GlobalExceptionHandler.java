@@ -1,6 +1,7 @@
 package de.fherold.skillswap.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -37,6 +38,11 @@ public class GlobalExceptionHandler {
         log.warn("Validation failed: {}", message);
 
         return buildErrorResponse(message, "VALIDATION_FAILED", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        return buildErrorResponse(ex.getMessage(), "VALIDATION_FAILED", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
