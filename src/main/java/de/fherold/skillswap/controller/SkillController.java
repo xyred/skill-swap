@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/skills")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "SkillController", description = "Endpoints for managing skills and performing swaps")
 public class SkillController {
 
@@ -28,8 +31,8 @@ public class SkillController {
     })
     @PostMapping("/swap")
     public ResponseEntity<String> performSwap(
-            @Parameter(description = "ID of the student receiving the skill") @RequestParam Long studentId,
-            @Parameter(description = "ID of the skill being learned") @RequestParam Long skillId) {
+            @Parameter(description = "ID of the student receiving the skill") @RequestParam @NotNull(message = "Student ID is required") Long studentId,
+            @Parameter(description = "ID of the skill being learned") @RequestParam @NotNull(message = "Skill ID is required") Long skillId) {
 
         skillService.performSwap(studentId, skillId);
         return ResponseEntity.ok("Swap successful!");
@@ -45,10 +48,6 @@ public class SkillController {
     public ResponseEntity<List<SkillResponseDTO>> getAllSkills(@Parameter(description = "Optional search term to filter skills by title")
                                                                @RequestParam(required = false) String search) {
 
-        List<SkillResponseDTO> skills = (search != null && !search.isBlank())
-                ? skillService.searchSkillsByTitle(search)
-                : skillService.getAllSkills();
-
-        return ResponseEntity.ok(skills);
+        return ResponseEntity.ok(skillService.searchSkillsByTitle(search));
     }
 }
