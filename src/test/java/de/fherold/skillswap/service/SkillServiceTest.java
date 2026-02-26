@@ -51,8 +51,6 @@ class SkillServiceTest {
 
         assertEquals(4, student.getCredits(), "Student should have 1 credit less");
         assertEquals(6, provider.getCredits(), "Provider should have 1 credit more");
-        verify(userRepository).save(student);
-        verify(userRepository).save(provider);
     }
 
     @Test

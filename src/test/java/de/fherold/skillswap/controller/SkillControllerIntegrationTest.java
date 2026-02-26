@@ -22,64 +22,64 @@ class SkillControllerIntegrationTest {
     @Test
     void shouldReturnAllSkills() throws Exception {
         mockMvc.perform(get("/api/skills"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].title").value("Java Programming"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].title").value("Java Programming"));
     }
 
     @Test
     void shouldPerformSuccessfulSwap() throws Exception {
         mockMvc.perform(post("/api/skills/swap")
-                        .param("studentId", "1")
-                        .param("skillId", "1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Swap successful!"));
+                .param("studentId", "1")
+                .param("skillId", "1"))
+            .andExpect(status().isOk())
+            .andExpect(content().string("Swap successful!"));
     }
 
     @Test
     void shouldFailSwapIfInsufficientCredits() throws Exception {
         for (int i = 0; i < 5; i++) {
             mockMvc.perform(post("/api/skills/swap")
-                            .param("studentId", "1")
-                            .param("skillId", "1"))
-                    .andExpect(status().isOk());
+                    .param("studentId", "1")
+                    .param("skillId", "1"))
+                .andExpect(status().isOk());
         }
 
         mockMvc.perform(post("/api/skills/swap")
-                        .param("studentId", "1")
-                        .param("skillId", "1"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Student does not have enough credits"))
-                .andExpect(jsonPath("$.errorCode").value("BUSINESS_RULE_VIOLATION"));
+                .param("studentId", "1")
+                .param("skillId", "1"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Student does not have enough credits"))
+            .andExpect(jsonPath("$.errorCode").value("INSUFFICIENT_CREDITS"));
     }
 
     @Test
     void shouldReturn404IfUserDoesNotExist() throws Exception {
         mockMvc.perform(post("/api/skills/swap")
-                        .param("studentId", "999")
-                        .param("skillId", "1"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"));
+                .param("studentId", "999")
+                .param("skillId", "1"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"));
     }
 
     @Test
     void shouldFilterSkillsByTitle() throws Exception {
         mockMvc.perform(get("/api/skills").param("search", "java"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].title").value("Java Programming"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].title").value("Java Programming"));
 
         mockMvc.perform(get("/api/skills").param("search", "python"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
     void shouldReturnCustomErrorWhenSkillNotFound() throws Exception {
         mockMvc.perform(get("/api/skills/999")) // ID 999 doesn't exist
-                .andExpect(status().isNotFound()) // Verify it's 404
-                .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.timestamp").exists());
+            .andExpect(status().isNotFound()) // Verify it's 404
+            .andExpect(jsonPath("$.errorCode").value("RESOURCE_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").exists())
+            .andExpect(jsonPath("$.timestamp").exists());
     }
 }
