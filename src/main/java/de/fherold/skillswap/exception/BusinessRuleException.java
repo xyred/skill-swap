@@ -1,7 +1,13 @@
 package de.fherold.skillswap.exception;
 
+import lombok.Getter;
+
+@Getter
 public class BusinessRuleException extends RuntimeException {
-    public BusinessRuleException(String message) {
+    private final String errorCode;
+
+    public BusinessRuleException(String message, String errorCode) {
         super(message);
+        this.errorCode = errorCode;
     }
 }

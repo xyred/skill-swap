@@ -1,7 +1,7 @@
 package de.fherold.skillswap.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,16 +24,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ErrorResponse> handleBusinessLogicError(BusinessRuleException ex) {
         log.warn("Business rule violation: {}", ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), "BUSINESS_RULE_VIOLATION", HttpStatus.BAD_REQUEST);
+        String code = (ex.getErrorCode() != null) ? ex.getErrorCode() : "BUSINESS_RULE_VIOLATION";
+        return buildErrorResponse(ex.getMessage(), code, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
-            MethodArgumentNotValidException ex) {
+        MethodArgumentNotValidException ex) {
 
         String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .collect(Collectors.joining(", "));
 
         log.warn("Validation failed: {}", message);
 
@@ -53,9 +54,9 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, String code, HttpStatus status) {
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
-                message,
-                code
+            LocalDateTime.now(),
+            message,
+            code
         );
         return new ResponseEntity<>(error, status);
     }
