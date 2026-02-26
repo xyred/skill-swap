@@ -30,32 +30,29 @@ public class SkillService {
     @Transactional
     public void performSwap(Long studentId, Long skillId) {
         User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with ID: " + studentId));
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with ID: " + studentId));
 
         Skill skill = skillRepository.findById(skillId)
-                .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + skillId));
+            .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + skillId));
 
         User provider = skill.getProvider();
 
         if (student.getCredits() <= 0) {
-            throw new BusinessRuleException("Student does not have enough credits");
+            throw new BusinessRuleException("Student does not have enough credits", "INSUFFICIENT_CREDITS");
         }
 
         if (student.getId().equals(provider.getId())) {
-            throw new BusinessRuleException("Student cannot swap with themselves");
+            throw new BusinessRuleException("Student cannot swap with themselves", "SELF_SWAP_NOT_ALLOWED");
         }
 
         student.setCredits(student.getCredits() - 1);
         provider.setCredits(provider.getCredits() + 1);
-
-        userRepository.save(student);
-        userRepository.save(provider);
     }
 
     public List<SkillResponseDTO> getAllSkills() {
         return skillRepository.findAll().stream()
-                .map(this::mapToDTO)
-                .toList();
+            .map(this::mapToDTO)
+            .toList();
     }
 
     public List<SkillResponseDTO> searchSkillsByTitle(String title) {
@@ -64,22 +61,22 @@ public class SkillService {
         }
 
         return skillRepository.findByTitleContainingIgnoreCase(title).stream()
-                .map(this::mapToDTO)
-                .toList();
+            .map(this::mapToDTO)
+            .toList();
     }
 
     public SkillResponseDTO getSkillById(Long id) {
         return skillRepository.findById(id)
-                .map(this::mapToDTO)
-                .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + id));
+            .map(this::mapToDTO)
+            .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + id));
     }
 
     private SkillResponseDTO mapToDTO(Skill skill) {
         return new SkillResponseDTO(
-                skill.getId(),
-                skill.getTitle(),
-                skill.getDescription(),
-                skill.getProvider() != null ? skill.getProvider().getUsername() : "Unknown Provider"
+            skill.getId(),
+            skill.getTitle(),
+            skill.getDescription(),
+            skill.getProvider() != null ? skill.getProvider().getUsername() : "Unknown Provider"
         );
     }
 }
