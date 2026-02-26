@@ -4,8 +4,10 @@ import de.fherold.skillswap.dto.SkillResponseDTO;
 import de.fherold.skillswap.exception.BusinessRuleException;
 import de.fherold.skillswap.exception.ResourceNotFoundException;
 import de.fherold.skillswap.model.Skill;
+import de.fherold.skillswap.model.SwapTransaction;
 import de.fherold.skillswap.model.User;
 import de.fherold.skillswap.repository.SkillRepository;
+import de.fherold.skillswap.repository.SwapTransactionRepository;
 import de.fherold.skillswap.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class SkillService {
 
     private final SkillRepository skillRepository;
     private final UserRepository userRepository;
+    private final SwapTransactionRepository swapTransactionRepository;
 
     @Transactional
     public void performSwap(Long studentId, Long skillId) {
@@ -47,6 +50,16 @@ public class SkillService {
 
         student.setCredits(student.getCredits() - 1);
         provider.setCredits(provider.getCredits() + 1);
+
+        SwapTransaction swapTransaction = SwapTransaction.builder()
+            .studentId(student.getId())
+            .providerId(provider.getId())
+            .skillId(skill.getId())
+            .skillTitle(skill.getTitle())
+            .creditAmount(1)
+            .build();
+
+        swapTransactionRepository.save(swapTransaction);
     }
 
     public List<SkillResponseDTO> getAllSkills() {

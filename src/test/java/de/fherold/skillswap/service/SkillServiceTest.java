@@ -1,8 +1,10 @@
 package de.fherold.skillswap.service;
 
 import de.fherold.skillswap.model.Skill;
+import de.fherold.skillswap.model.SwapTransaction;
 import de.fherold.skillswap.model.User;
 import de.fherold.skillswap.repository.SkillRepository;
+import de.fherold.skillswap.repository.SwapTransactionRepository;
 import de.fherold.skillswap.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,9 @@ class SkillServiceTest {
 
     @Mock
     private SkillRepository skillRepository;
+
+    @Mock
+    private SwapTransactionRepository transactionRepository;
 
     @InjectMocks
     private SkillService skillService;
@@ -90,5 +95,39 @@ class SkillServiceTest {
         assertThrows(RuntimeException.class, () -> skillService.performSwap(1L, 100L));
 
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should transfer credits and record a transaction on success")
+    void shouldTransferCreditsAndRecordTransaction() {
+        // 1. Arrange (Same as before)
+        User student = new User();
+        student.setId(1L);
+        student.setCredits(5);
+
+        User provider = new User();
+        provider.setId(2L);
+        provider.setCredits(5);
+        provider.setUsername("ExpertDev");
+
+        Skill skill = new Skill();
+        skill.setId(100L);
+        skill.setTitle("Java Mastery");
+        skill.setProvider(provider);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(skillRepository.findById(100L)).thenReturn(Optional.of(skill));
+
+        // 2. Act
+        skillService.performSwap(1L, 100L);
+
+        // 3. Assert (State checks)
+        assertEquals(4, student.getCredits());
+        assertEquals(6, provider.getCredits());
+
+        // 4. Verification (The "Red" part)
+        // We verify that save() was called with ANY SwapTransaction object
+        // In a second, this will fail because the Service doesn't even have the repo yet!
+        verify(transactionRepository).save(any(SwapTransaction.class));
     }
 }
