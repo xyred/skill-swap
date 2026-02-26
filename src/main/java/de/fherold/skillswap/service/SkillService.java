@@ -1,6 +1,7 @@
 package de.fherold.skillswap.service;
 
 import de.fherold.skillswap.dto.SkillResponseDTO;
+import de.fherold.skillswap.dto.SwapTransactionResponseDTO;
 import de.fherold.skillswap.exception.BusinessRuleException;
 import de.fherold.skillswap.exception.ResourceNotFoundException;
 import de.fherold.skillswap.model.Skill;
@@ -82,6 +83,24 @@ public class SkillService {
         return skillRepository.findById(id)
             .map(this::mapToDTO)
             .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + id));
+    }
+
+    public List<SwapTransactionResponseDTO> getSwapHistoryByStudent(Long studentId) {
+        return swapTransactionRepository.findByStudentId(studentId).stream()
+            .map(this::mapToTransactionDTO)
+            .toList();
+    }
+
+    private SwapTransactionResponseDTO mapToTransactionDTO(SwapTransaction transaction) {
+        return new SwapTransactionResponseDTO(
+            transaction.getId(),
+            transaction.getStudentId(),
+            transaction.getProviderId(),
+            transaction.getSkillId(),
+            transaction.getSkillTitle(),
+            transaction.getCreditAmount(),
+            transaction.getSwappedAt()
+        );
     }
 
     private SkillResponseDTO mapToDTO(Skill skill) {
