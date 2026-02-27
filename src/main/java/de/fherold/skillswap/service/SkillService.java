@@ -86,6 +86,10 @@ public class SkillService {
     }
 
     public List<SwapTransactionResponseDTO> getSwapHistoryByStudent(Long studentId) {
+        if (!userRepository.existsById(studentId)) {
+            throw new ResourceNotFoundException("Cannot fetch history. Student not found with ID: " + studentId);
+        }
+        
         return swapTransactionRepository.findByStudentId(studentId).stream()
             .map(this::mapToTransactionDTO)
             .toList();
