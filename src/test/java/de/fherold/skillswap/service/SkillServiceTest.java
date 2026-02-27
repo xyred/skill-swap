@@ -100,7 +100,6 @@ class SkillServiceTest {
     @Test
     @DisplayName("Should transfer credits and record a transaction on success")
     void shouldTransferCreditsAndRecordTransaction() {
-        // 1. Arrange (Same as before)
         User student = new User();
         student.setId(1L);
         student.setCredits(5);
@@ -118,16 +117,11 @@ class SkillServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(student));
         when(skillRepository.findById(100L)).thenReturn(Optional.of(skill));
 
-        // 2. Act
         skillService.performSwap(1L, 100L);
 
-        // 3. Assert (State checks)
         assertEquals(4, student.getCredits());
         assertEquals(6, provider.getCredits());
 
-        // 4. Verification (The "Red" part)
-        // We verify that save() was called with ANY SwapTransaction object
-        // In a second, this will fail because the Service doesn't even have the repo yet!
         verify(transactionRepository).save(any(SwapTransaction.class));
     }
 }
