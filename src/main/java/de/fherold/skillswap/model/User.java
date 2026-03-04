@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +20,8 @@ import java.util.List;
 @AllArgsConstructor
 @ToString(exclude = "skills")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class User {
 
     @Id
@@ -36,6 +41,13 @@ public class User {
     @NotBlank(message = "Password is required")
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private String role;
+
+    @NotBlank(message = "Tenant ID is required")
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId;
 
     @Min(0)
     @Column(nullable = false)

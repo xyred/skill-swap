@@ -3,6 +3,9 @@ package de.fherold.skillswap.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 @Entity
 @Table(name = "skills")
@@ -12,6 +15,8 @@ import lombok.*;
 @AllArgsConstructor
 @ToString(exclude = "provider")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public class Skill {
 
     @Id
@@ -25,6 +30,10 @@ public class Skill {
 
     @Column(length = 1000)
     private String description;
+
+    @NotBlank(message = "Tenant ID is required")
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id", nullable = false)

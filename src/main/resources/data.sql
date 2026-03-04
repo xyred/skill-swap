@@ -1,15 +1,15 @@
--- 1. Insert Users (Let the database handle the ID)
--- We omit 'id' so the IDENTITY generator stays in sync
-INSERT INTO users (username, email, password, credits)
-VALUES ('StudentSam', 'sam@example.com', 'password123', 5);
+-- 1. Insert Users
+-- Added 'role' and 'tenant_id' to match your new Entity requirements
+INSERT INTO users (username, email, password, credits, role, tenant_id)
+VALUES ('StudentSam', 'sam@example.com', 'password123', 5, 'ROLE_USER', 'google');
 
-INSERT INTO users (username, email, password, credits)
-VALUES ('TeacherTom', 'tom@example.com', 'password456', 10);
+INSERT INTO users (username, email, password, credits, role, tenant_id)
+VALUES ('TeacherTom', 'tom@example.com', 'password456', 10, 'ROLE_TENANT_ADMIN', 'google');
 
 -- 2. Insert Skills
--- We use a Subquery to find the provider_id based on the email.
--- This is safer than guessing IDs, especially since they are now auto-generated!
-INSERT INTO skills (title, description, provider_id)
+-- Added 'tenant_id' here as well so the Skill is isolated to the same company
+INSERT INTO skills (title, description, provider_id, tenant_id)
 VALUES ('Java Programming',
         'Learn Spring Boot from scratch',
-        (SELECT id FROM users WHERE email = 'tom@example.com'));
+        (SELECT id FROM users WHERE email = 'tom@example.com'),
+        'google');
