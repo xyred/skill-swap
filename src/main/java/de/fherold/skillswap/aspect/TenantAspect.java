@@ -25,6 +25,7 @@ public class TenantAspect {
     @Before("repositoryMethods()")
     public void beforeExecution() {
         String tenantId = TenantContext.getTenantId();
+        System.out.println("DEBUG: AOP Interceptor active! Current Tenant: " + tenantId);
 
         if (tenantId != null) {
             // Unwrap the Hibernate Session from the JPA EntityManager

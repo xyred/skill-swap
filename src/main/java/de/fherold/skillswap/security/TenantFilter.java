@@ -14,27 +14,29 @@ import java.io.IOException;
 @Component
 public class TenantFilter extends OncePerRequestFilter {
 
-    private static final String TENANT_HEADER = "X-Tenant-ID";
-
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Extract the ID from the custom header
-        String tenantId = request.getHeader(TENANT_HEADER);
+        // 1. Ask Spring Security: "Who is currently logged in?"
+        // This is the "Pocket" where Step 1 stored the user's ID Badge
+        org.springframework.security.core.Authentication auth =
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
 
-        // 2. If present, put it in our ThreadLocal "pocket"
-        if (tenantId != null && !tenantId.trim().isEmpty()) {
+        // 2. If the user is logged in, grab their specific Tenant ID
+        if (auth != null && auth.getPrincipal() instanceof TenantUserDetails user) {
+            String tenantId = user.getTenantId();
+
+            // 3. Put it in our ThreadLocal "Locker" (TenantContext)
             TenantContext.setTenantId(tenantId);
         }
 
         try {
-            // 3. Let the request continue to the next filter/controller
+            // 4. Continue with the request
             filterChain.doFilter(request, response);
         } finally {
-            // 4. CRITICAL: Clear the pocket after the request is done
-            // This prevents "data leaking" to the next user using this thread
+            // 5. CRITICAL: Wipe the locker clean so the next request starts fresh
             TenantContext.clear();
         }
     }
