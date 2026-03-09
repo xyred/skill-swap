@@ -1,5 +1,6 @@
 package de.fherold.skillswap.controller;
 
+import de.fherold.skillswap.dto.SkillRequestDTO;
 import de.fherold.skillswap.dto.SkillResponseDTO;
 import de.fherold.skillswap.exception.ErrorResponse;
 import de.fherold.skillswap.service.SkillService;
@@ -11,8 +12,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +26,7 @@ import java.util.List;
 @RequestMapping("/api/skills")
 @RequiredArgsConstructor
 @Validated
-@Tag(name = "Skill Management", description = "Endpoints for browsing skills and executing the credit-based exchange.")
+@Tag(name = "Skill Management", description = "CRUD-Endpoints for skills and executing the credit-based exchange.")
 public class SkillController {
 
     private final SkillService skillService;
@@ -40,7 +43,6 @@ public class SkillController {
     public ResponseEntity<String> performSwap(
         @Parameter(description = "ID of the student receiving the skill", example = "1")
         @RequestParam @NotNull(message = "Student ID is required") Long studentId,
-
         @Parameter(description = "ID of the skill being learned", example = "42")
         @RequestParam @NotNull(message = "Skill ID is required") Long skillId) {
 
@@ -48,10 +50,46 @@ public class SkillController {
         return ResponseEntity.ok("Swap successful!");
     }
 
-    @Operation(summary = "Get skill by ID", description = "Returns detailed information about a specific skill.")
+    @Operation(summary = "Create a new skill", description = "Adds a skill to the current tenant's catalog. The tenant ID is automatically assigned from the authenticated user.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Skill created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping
+    public ResponseEntity<SkillResponseDTO> createSkill(@Valid @RequestBody SkillRequestDTO skillRequestDTO) {
+        return new ResponseEntity<>(skillService.createSkill(skillRequestDTO), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Update an existing skill", description = "Modifies skill details. Note: Users can only update skills belonging to their own organization.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Skill updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Skill not found or belongs to another tenant",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<SkillResponseDTO> updateSkill(
+        @Parameter(description = "ID of the skill to update", example = "5")
+        @PathVariable Long id, 
+        @Valid @RequestBody SkillRequestDTO skillRequestDTO) {
+        return ResponseEntity.ok(skillService.updateSkill(id, skillRequestDTO));
+    }
+
+    @Operation(summary = "Delete a skill", description = "Removes a skill from the catalog. Users can only delete skills belonging to their own organization.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Skill deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Skill not found or belongs to another tenant")
+    })
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteSkill(@PathVariable Long id) {
+        skillService.deleteSkill(id);
+    }
+
+    @Operation(summary = "Get skill by ID", description = "Returns detailed information about a specific skill. Access is restricted to the owner's tenant.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Skill found and returned"),
-        @ApiResponse(responseCode = "404", description = "Skill with the given ID does not exist",
+        @ApiResponse(responseCode = "404", description = "Skill with the given ID does not exist in your organization",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
@@ -61,7 +99,7 @@ public class SkillController {
         return ResponseEntity.ok(skillService.getSkillById(id));
     }
 
-    @Operation(summary = "List and search skills", description = "Retrieves all available skills. Use the 'search' parameter to filter by title.")
+    @Operation(summary = "List and search skills", description = "Retrieves skills available within the user's organization.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successful retrieval",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = SkillResponseDTO.class))))

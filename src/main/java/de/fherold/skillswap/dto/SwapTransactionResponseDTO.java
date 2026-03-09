@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 /**
  * DTO for displaying a history of skill swaps.
  */
-
 public record SwapTransactionResponseDTO(
     Long id,
     Long studentId,
