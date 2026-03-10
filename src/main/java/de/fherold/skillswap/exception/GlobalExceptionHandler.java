@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -30,11 +31,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
-        MethodArgumentNotValidException ex) {
+            MethodArgumentNotValidException ex) {
 
         String message = ex.getBindingResult().getFieldErrors().stream()
-            .map(error -> error.getField() + ": " + error.getDefaultMessage())
-            .collect(Collectors.joining(", "));
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
 
         log.warn("Validation failed: {}", message);
 
@@ -46,18 +47,28 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), "VALIDATION_FAILED", HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
+        log.warn("Path not found: {}", ex.getResourcePath());
+
+        return buildErrorResponse(
+                "The URL path '" + ex.getResourcePath() + "' does not exist.",
+                "PATH_NOT_FOUND",
+                HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
         log.error("Unexpected error occurred: ", ex);
-        return buildErrorResponse("An unexpected error occurred", "INTERNAL_SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse("An unexpected error occurred", "INTERNAL_SERVER_ERROR",
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, String code, HttpStatus status) {
         ErrorResponse error = new ErrorResponse(
-            LocalDateTime.now(),
-            message,
-            code
-        );
+                LocalDateTime.now(),
+                message,
+                code);
         return new ResponseEntity<>(error, status);
     }
 }
