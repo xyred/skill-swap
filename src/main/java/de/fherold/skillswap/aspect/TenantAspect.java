@@ -1,39 +1,49 @@
 package de.fherold.skillswap.aspect;
 
-import de.fherold.skillswap.context.TenantContext;
-import jakarta.persistence.EntityManager;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import de.fherold.skillswap.context.TenantContext;
+import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class TenantAspect {
 
-    @Autowired
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
-    // This Pointcut tells Spring to watch ALL methods in your repository package
     @Pointcut("execution(* de.fherold.skillswap.repository.*.*(..))")
     public void repositoryMethods() {
     }
 
-    // This "Before" advice runs right BEFORE the repository method executes
     @Before("repositoryMethods()")
     public void beforeExecution() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 1. Check for Super Admin status
+        if (auth != null && auth.isAuthenticated()) {
+            boolean isSuperAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+            if (isSuperAdmin) {
+                System.out.println("DEBUG: Super Admin detected. Accessing global data.");
+                return;
+            }
+        }
+
+        // 2. Standard Multi-Tenant Logic
         String tenantId = TenantContext.getTenantId();
-        System.out.println("DEBUG: AOP Interceptor active! Current Tenant: " + tenantId);
-
         if (tenantId != null) {
-            // Unwrap the Hibernate Session from the JPA EntityManager
             Session session = entityManager.unwrap(Session.class);
-
-            // Enable the filter we defined in our Entities
             session.enableFilter("tenantFilter")
-                .setParameter("tenantId", tenantId);
+                   .setParameter("tenantId", tenantId);
         }
     }
 }
