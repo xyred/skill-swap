@@ -1,48 +1,47 @@
 -- 1. CLEANUP
-DELETE FROM swap_transactions; -- Don't forget to clear transactions too!
+DELETE FROM swap_transactions;
 DELETE FROM skills;
 DELETE FROM users;
 
--- 2. INSERT USERS (Adding Super Admin + 4 Tenants)
+-- 2. INSERT USERS (All passwords are 'password123')
 
--- THE SYSTEM ADMIN (God Mode)
+-- THE SYSTEM ADMIN
 INSERT INTO users (username, email, password, role, tenant_id, credits) VALUES
-('super_admin', 'admin@skillswap.io', 'admin123', 'ROLE_SUPER_ADMIN', 'system', 9999);
+('super_admin', 'admin@skillswap.io', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_SUPER_ADMIN', 'system', 9999);
 
 -- TENANT: google
 INSERT INTO users (username, email, password, role, tenant_id, credits) VALUES
-('google_hr', 'hr@google.com', 'password123', 'ROLE_TENANT_ADMIN', 'google', 100),
-('sam_g', 'sam@google.com', 'password123', 'ROLE_USER', 'google', 5),
-('beth_g', 'beth@google.com', 'password123', 'ROLE_USER', 'google', 5),
-('rick_g', 'rick@google.com', 'password123', 'ROLE_USER', 'google', 5),
-('morty_g', 'morty@google.com', 'password123', 'ROLE_USER', 'google', 5);
+('google_hr', 'hr@google.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_TENANT_ADMIN', 'google', 100),
+('sam_g', 'sam@google.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'google', 5),
+('beth_g', 'beth@google.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'google', 5),
+('rick_g', 'rick@google.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'google', 5),
+('morty_g', 'morty@google.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'google', 5);
 
 -- TENANT: meta
 INSERT INTO users (username, email, password, role, tenant_id, credits) VALUES
-('meta_hr', 'hr@meta.com', 'password123', 'ROLE_TENANT_ADMIN', 'meta', 100),
-('mark_m', 'mark@meta.com', 'password123', 'ROLE_USER', 'meta', 5),
-('sheryl_m', 'sheryl@meta.com', 'password123', 'ROLE_USER', 'meta', 5),
-('dustin_m', 'dustin@meta.com', 'password123', 'ROLE_USER', 'meta', 5),
-('chris_m', 'chris@meta.com', 'password123', 'ROLE_USER', 'meta', 5);
+('meta_hr', 'hr@meta.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_TENANT_ADMIN', 'meta', 100),
+('mark_m', 'mark@meta.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'meta', 5),
+('sheryl_m', 'sheryl@meta.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'meta', 5),
+('dustin_m', 'dustin@meta.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'meta', 5),
+('chris_m', 'chris@meta.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'meta', 5);
 
 -- TENANT: apple
 INSERT INTO users (username, email, password, role, tenant_id, credits) VALUES
-('apple_hr', 'hr@apple.com', 'password123', 'ROLE_TENANT_ADMIN', 'apple', 100),
-('tim_a', 'tim@apple.com', 'password123', 'ROLE_USER', 'apple', 5),
-('steve_a', 'steve@apple.com', 'password123', 'ROLE_USER', 'apple', 5),
-('jony_a', 'jony@apple.com', 'password123', 'ROLE_USER', 'apple', 5),
-('phil_a', 'phil@apple.com', 'password123', 'ROLE_USER', 'apple', 5);
+('apple_hr', 'hr@apple.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_TENANT_ADMIN', 'apple', 100),
+('tim_a', 'tim@apple.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'apple', 5),
+('steve_a', 'steve@apple.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'apple', 5),
+('jony_a', 'jony@apple.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'apple', 5),
+('phil_a', 'phil@apple.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'apple', 5);
 
 -- TENANT: amazon
 INSERT INTO users (username, email, password, role, tenant_id, credits) VALUES
-('amazon_hr', 'hr@amazon.com', 'password123', 'ROLE_TENANT_ADMIN', 'amazon', 100),
-('jeff_z', 'jeff@amazon.com', 'password123', 'ROLE_USER', 'amazon', 5),
-('andy_z', 'andy@amazon.com', 'password123', 'ROLE_USER', 'amazon', 5),
-('werner_z', 'werner@amazon.com', 'password123', 'ROLE_USER', 'amazon', 5),
-('mackenzie_z', 'mackenzie@amazon.com', 'password123', 'ROLE_USER', 'amazon', 5);
+('amazon_hr', 'hr@amazon.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_TENANT_ADMIN', 'amazon', 100),
+('jeff_z', 'jeff@amazon.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'amazon', 5),
+('andy_z', 'andy@amazon.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'amazon', 5),
+('werner_z', 'werner@amazon.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'amazon', 5),
+('mackenzie_z', 'mackenzie@amazon.com', '$2a$12$OCIEFCxeT7U6x4g/3gF2xe1/RvcaVWk3TiWZPeY3Ls3nbuk9e9hqW', 'ROLE_USER', 'amazon', 5);
 
 -- 3. INSERT SKILLS
-
 INSERT INTO skills (title, description, tenant_id, provider_id) VALUES
 ('Java Backend', 'Spring Boot expert', 'google', (SELECT id FROM users WHERE username = 'sam_g')),
 ('Frontend React', 'Modern UI/UX', 'google', (SELECT id FROM users WHERE username = 'beth_g')),

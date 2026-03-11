@@ -1,11 +1,13 @@
 package de.fherold.skillswap.security;
 
+import de.fherold.skillswap.model.User;
 import de.fherold.skillswap.context.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jspecify.annotations.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -15,28 +17,26 @@ import java.io.IOException;
 public class TenantFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, 
+                                    HttpServletResponse response, 
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        // 1. Ask Spring Security: "Who is currently logged in?"
-        // This is the "Pocket" where Step 1 stored the user's ID Badge
-        org.springframework.security.core.Authentication auth =
-            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        // 1. Get the current authentication from Spring Security
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 2. If the user is logged in, grab their specific Tenant ID
-        if (auth != null && auth.getPrincipal() instanceof TenantUserDetails user) {
-            String tenantId = user.getTenantId();
-
-            // 3. Put it in our ThreadLocal "Locker" (TenantContext)
-            TenantContext.setTenantId(tenantId);
+        // 2. Check if the user is authenticated and is one of our User entities
+        if (authentication != null && authentication.getPrincipal() instanceof User user) {
+            // 3. Set the tenant in our ThreadLocal context
+            // This is what the @Tenant aspect or Hibernate filter will read
+            TenantContext.setTenantId(user.getTenantId());
         }
 
         try {
-            // 4. Continue with the request
             filterChain.doFilter(request, response);
         } finally {
-            // 5. CRITICAL: Wipe the locker clean so the next request starts fresh
+            // 4. CRITICAL: Always clear the context after the request is finished
+            // This prevents "Tenant Leaks" between different user requests
             TenantContext.clear();
         }
     }
