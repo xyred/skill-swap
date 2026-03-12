@@ -17,7 +17,4 @@ public class SkillRequestDTO {
 
     @Size(max = 1000, message = "Description must be under 1000 characters")
     private String description;
-
-    @NotBlank(message = "Provider username is required")
-    private String providerUsername;
 }

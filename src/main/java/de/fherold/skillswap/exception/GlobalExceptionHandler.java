@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -62,6 +63,16 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error occurred: ", ex);
         return buildErrorResponse("An unexpected error occurred", "INTERNAL_SERVER_ERROR",
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return buildErrorResponse(
+                "Access denied: You do not have the required permissions.",
+                "ACCESS_DENIED",
+                HttpStatus.FORBIDDEN);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, String code, HttpStatus status) {

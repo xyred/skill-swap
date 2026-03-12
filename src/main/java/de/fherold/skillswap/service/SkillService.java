@@ -1,5 +1,11 @@
 package de.fherold.skillswap.service;
 
+import java.util.List;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import de.fherold.skillswap.context.TenantContext;
 import de.fherold.skillswap.dto.SkillRequestDTO;
 import de.fherold.skillswap.dto.SkillResponseDTO;
@@ -13,11 +19,6 @@ import de.fherold.skillswap.repository.SkillRepository;
 import de.fherold.skillswap.repository.SwapTransactionRepository;
 import de.fherold.skillswap.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * Service handling skill operations and credit-based swaps.
@@ -36,15 +37,18 @@ public class SkillService {
 
     /**
      * Centralized security check to fetch a skill.
-     * Regular users are restricted to their tenant; ROLE_SUPER_ADMIN can access anything.
+     * Regular users are restricted to their tenant; ROLE_SUPER_ADMIN can access
+     * anything.
      */
     private Skill fetchSkillSecurely(Long id) {
-        if (isSuperAdmin()) {
-            return skillRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Skill not found (Global)"));
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Skill with ID " + id + " not found"));
+
+        if (!isSuperAdmin() && !skill.getTenantId().equals(TenantContext.getTenantId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You do not have permission to access this skill");
         }
-        return skillRepository.findByIdAndTenantId(id, TenantContext.getTenantId())
-            .orElseThrow(() -> new ResourceNotFoundException("Skill not found or access denied"));
+        return skill;
     }
 
     /**
@@ -61,8 +65,8 @@ public class SkillService {
         // Aspect automatically filters this for regular users
         // and skips filtering for Super Admins.
         return skillRepository.findAll().stream()
-            .map(this::mapToDTO)
-            .toList();
+                .map(this::mapToDTO)
+                .toList();
     }
 
     public SkillResponseDTO getSkillById(Long id) {
@@ -72,11 +76,12 @@ public class SkillService {
     @Transactional
     public SkillResponseDTO createSkill(SkillRequestDTO dto) {
         String currentTenant = TenantContext.getTenantId();
-        
+        String authenticatedUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
         // Find provider and ensure they belong to the same tenant as the creator
-        User provider = userRepository.findByUsername(dto.getProviderUsername())
-            .filter(u -> u.getTenantId().equals(currentTenant))
-            .orElseThrow(() -> new BusinessRuleException("Invalid provider for this tenant", "INVALID_PROVIDER"));
+        User provider = userRepository.findByUsername(authenticatedUsername)
+                .filter(u -> u.getTenantId().equals(currentTenant))
+                .orElseThrow(() -> new BusinessRuleException("Invalid provider for this tenant", "INVALID_PROVIDER"));
 
         Skill skill = new Skill();
         skill.setTitle(dto.getTitle());
@@ -108,8 +113,8 @@ public class SkillService {
             return getAllSkills();
         }
         return skillRepository.findByTitleContainingIgnoreCase(title).stream()
-            .map(this::mapToDTO)
-            .toList();
+                .map(this::mapToDTO)
+                .toList();
     }
 
     public List<SwapTransactionResponseDTO> getSwapHistoryByStudent(Long studentId) {
@@ -119,8 +124,8 @@ public class SkillService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student history not found or access denied"));
 
         return swapTransactionRepository.findByStudentId(student.getId()).stream()
-            .map(this::mapToTransactionDTO)
-            .toList();
+                .map(this::mapToTransactionDTO)
+                .toList();
     }
 
     // --- THE SWAP LOGIC ---
@@ -131,11 +136,11 @@ public class SkillService {
 
         // Security: Swaps must stay within a single tenant to maintain credit economy.
         User student = userRepository.findById(studentId)
-            .filter(u -> u.getTenantId().equals(currentTenant))
-            .orElseThrow(() -> new ResourceNotFoundException("Student not found or access denied"));
+                .filter(u -> u.getTenantId().equals(currentTenant))
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found or access denied"));
 
         Skill skill = skillRepository.findByIdAndTenantId(skillId, currentTenant)
-            .orElseThrow(() -> new ResourceNotFoundException("Skill not found or access denied"));
+                .orElseThrow(() -> new ResourceNotFoundException("Skill not found or access denied"));
 
         User provider = skill.getProvider();
 
@@ -153,13 +158,13 @@ public class SkillService {
 
         // Audit Trail
         SwapTransaction swapTransaction = SwapTransaction.builder()
-            .studentId(student.getId())
-            .providerId(provider.getId())
-            .skillId(skill.getId())
-            .skillTitle(skill.getTitle())
-            .creditAmount(1)
-            .tenantId(currentTenant)
-            .build();
+                .studentId(student.getId())
+                .providerId(provider.getId())
+                .skillId(skill.getId())
+                .skillTitle(skill.getTitle())
+                .creditAmount(1)
+                .tenantId(currentTenant)
+                .build();
 
         swapTransactionRepository.save(swapTransaction);
     }
@@ -168,22 +173,20 @@ public class SkillService {
 
     private SkillResponseDTO mapToDTO(Skill skill) {
         return new SkillResponseDTO(
-            skill.getId(),
-            skill.getTitle(),
-            skill.getDescription(),
-            skill.getProvider() != null ? skill.getProvider().getUsername() : "Unknown Provider"
-        );
+                skill.getId(),
+                skill.getTitle(),
+                skill.getDescription(),
+                skill.getProvider() != null ? skill.getProvider().getUsername() : "Unknown Provider");
     }
 
     private SwapTransactionResponseDTO mapToTransactionDTO(SwapTransaction transaction) {
         return new SwapTransactionResponseDTO(
-            transaction.getId(),
-            transaction.getStudentId(),
-            transaction.getProviderId(),
-            transaction.getSkillId(),
-            transaction.getSkillTitle(),
-            transaction.getCreditAmount(),
-            transaction.getSwappedAt()
-        );
+                transaction.getId(),
+                transaction.getStudentId(),
+                transaction.getProviderId(),
+                transaction.getSkillId(),
+                transaction.getSkillTitle(),
+                transaction.getCreditAmount(),
+                transaction.getSwappedAt());
     }
 }
