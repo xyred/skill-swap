@@ -75,6 +75,37 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            org.springframework.security.core.AuthenticationException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+        return buildErrorResponse(
+                "Invalid username or password",
+                "BAD_CREDENTIALS",
+                HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMalformedJson(
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        log.warn("Malformed JSON request: {}", ex.getMessage());
+        return buildErrorResponse(
+                "Required request body is missing or malformed",
+                "MALFORMED_JSON",
+                HttpStatus.BAD_REQUEST);
+    }
+
+    // Handle cases where someone tries to GET a POST endpoint (or vice versa)
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        log.warn("Method not supported: {}", ex.getMethod());
+        return buildErrorResponse(
+                "HTTP method '" + ex.getMethod() + "' is not supported for this endpoint.",
+                "METHOD_NOT_ALLOWED",
+                HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, String code, HttpStatus status) {
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
