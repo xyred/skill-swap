@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.fherold.skillswap.context.TenantContext;
-import de.fherold.skillswap.dto.SkillRequestDTO;
-import de.fherold.skillswap.dto.SkillResponseDTO;
-import de.fherold.skillswap.dto.SwapTransactionResponseDTO;
+import de.fherold.skillswap.dto.SkillRequestDto;
+import de.fherold.skillswap.dto.SkillResponseDto;
+import de.fherold.skillswap.dto.SwapTransactionResponseDto;
 import de.fherold.skillswap.exception.BusinessRuleException;
 import de.fherold.skillswap.exception.ResourceNotFoundException;
 import de.fherold.skillswap.model.Skill;
@@ -61,7 +61,7 @@ public class SkillService {
 
     // --- SKILL CRUD ---
 
-    public List<SkillResponseDTO> getAllSkills() {
+    public List<SkillResponseDto> getAllSkills() {
         // Aspect automatically filters this for regular users
         // and skips filtering for Super Admins.
         return skillRepository.findAll().stream()
@@ -69,12 +69,12 @@ public class SkillService {
                 .toList();
     }
 
-    public SkillResponseDTO getSkillById(Long id) {
+    public SkillResponseDto getSkillById(Long id) {
         return mapToDTO(fetchSkillSecurely(id));
     }
 
     @Transactional
-    public SkillResponseDTO createSkill(SkillRequestDTO dto) {
+    public SkillResponseDto createSkill(SkillRequestDto dto) {
         String currentTenant = TenantContext.getTenantId();
         String authenticatedUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -84,8 +84,8 @@ public class SkillService {
                 .orElseThrow(() -> new BusinessRuleException("Invalid provider for this tenant", "INVALID_PROVIDER"));
 
         Skill skill = new Skill();
-        skill.setTitle(dto.getTitle());
-        skill.setDescription(dto.getDescription());
+        skill.setTitle(dto.title());
+        skill.setDescription(dto.description());
         skill.setProvider(provider);
         skill.setTenantId(currentTenant);
 
@@ -93,10 +93,10 @@ public class SkillService {
     }
 
     @Transactional
-    public SkillResponseDTO updateSkill(Long id, SkillRequestDTO dto) {
+    public SkillResponseDto updateSkill(Long id, SkillRequestDto dto) {
         Skill skill = fetchSkillSecurely(id);
-        skill.setTitle(dto.getTitle());
-        skill.setDescription(dto.getDescription());
+        skill.setTitle(dto.title());
+        skill.setDescription(dto.description());
         return mapToDTO(skillRepository.save(skill));
     }
 
@@ -108,7 +108,7 @@ public class SkillService {
 
     // --- SEARCH & HISTORY ---
 
-    public List<SkillResponseDTO> searchSkillsByTitle(String title) {
+    public List<SkillResponseDto> searchSkillsByTitle(String title) {
         if (title == null || title.isBlank()) {
             return getAllSkills();
         }
@@ -117,7 +117,7 @@ public class SkillService {
                 .toList();
     }
 
-    public List<SwapTransactionResponseDTO> getSwapHistoryByStudent(Long studentId) {
+    public List<SwapTransactionResponseDto> getSwapHistoryByStudent(Long studentId) {
         // Security check: Super Admin sees all history; others only their tenant's.
         User student = userRepository.findById(studentId)
                 .filter(u -> isSuperAdmin() || u.getTenantId().equals(TenantContext.getTenantId()))
@@ -128,7 +128,7 @@ public class SkillService {
                 .toList();
     }
 
-    // --- THE SWAP LOGIC ---
+    // Swapping logic with strict tenant isolation and credit management
 
     @Transactional
     public void performSwap(Long studentId, Long skillId) {
@@ -169,18 +169,18 @@ public class SkillService {
         swapTransactionRepository.save(swapTransaction);
     }
 
-    // --- MAPPERS ---
+    // Mapping methods to convert entities to DTOs
 
-    private SkillResponseDTO mapToDTO(Skill skill) {
-        return new SkillResponseDTO(
+    private SkillResponseDto mapToDTO(Skill skill) {
+        return new SkillResponseDto(
                 skill.getId(),
                 skill.getTitle(),
                 skill.getDescription(),
                 skill.getProvider() != null ? skill.getProvider().getUsername() : "Unknown Provider");
     }
 
-    private SwapTransactionResponseDTO mapToTransactionDTO(SwapTransaction transaction) {
-        return new SwapTransactionResponseDTO(
+    private SwapTransactionResponseDto mapToTransactionDTO(SwapTransaction transaction) {
+        return new SwapTransactionResponseDto(
                 transaction.getId(),
                 transaction.getStudentId(),
                 transaction.getProviderId(),

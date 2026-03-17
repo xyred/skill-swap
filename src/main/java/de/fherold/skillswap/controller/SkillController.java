@@ -1,7 +1,7 @@
 package de.fherold.skillswap.controller;
 
-import de.fherold.skillswap.dto.SkillRequestDTO;
-import de.fherold.skillswap.dto.SkillResponseDTO;
+import de.fherold.skillswap.dto.SkillRequestDto;
+import de.fherold.skillswap.dto.SkillResponseDto;
 import de.fherold.skillswap.exception.ErrorResponse;
 import de.fherold.skillswap.service.SkillService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -73,8 +73,8 @@ public class SkillController {
             @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
-    public ResponseEntity<SkillResponseDTO> createSkill(@Valid @RequestBody SkillRequestDTO skillRequestDTO) {
-        return new ResponseEntity<>(skillService.createSkill(skillRequestDTO), HttpStatus.CREATED);
+    public ResponseEntity<SkillResponseDto> createSkill(@Valid @RequestBody SkillRequestDto skillRequestDto) {
+        return new ResponseEntity<>(skillService.createSkill(skillRequestDto), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Update an existing skill", description = "Modifies skill details. Note: Users can only update skills belonging to their own organization.")
@@ -83,10 +83,10 @@ public class SkillController {
             @ApiResponse(responseCode = "404", description = "Skill not found or belongs to another tenant", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping("/{id}")
-    public ResponseEntity<SkillResponseDTO> updateSkill(
+    public ResponseEntity<SkillResponseDto> updateSkill(
             @Parameter(description = "ID of the skill to update", example = "5") @PathVariable Long id,
-            @Valid @RequestBody SkillRequestDTO skillRequestDTO) {
-        return ResponseEntity.ok(skillService.updateSkill(id, skillRequestDTO));
+            @Valid @RequestBody SkillRequestDto skillRequestDto) {
+        return ResponseEntity.ok(skillService.updateSkill(id, skillRequestDto));
     }
 
     @Operation(summary = "Delete a skill", description = "Removes a skill from the catalog. **Security Constraint:** A user can only delete skills that belong to their own organization (tenant). "
@@ -115,17 +115,17 @@ public class SkillController {
             @ApiResponse(responseCode = "404", description = "Skill with the given ID does not exist in your organization", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
-    public ResponseEntity<SkillResponseDTO> getSkillById(
+    public ResponseEntity<SkillResponseDto> getSkillById(
             @Parameter(description = "The unique ID of the skill", example = "5") @PathVariable Long id) {
         return ResponseEntity.ok(skillService.getSkillById(id));
     }
 
     @Operation(summary = "List and search skills", description = "Retrieves skills available within the user's organization.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful retrieval", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SkillResponseDTO.class))))
+            @ApiResponse(responseCode = "200", description = "Successful retrieval", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SkillResponseDto.class))))
     })
     @GetMapping
-    public ResponseEntity<List<SkillResponseDTO>> getAllSkills(
+    public ResponseEntity<List<SkillResponseDto>> getAllSkills(
             @Parameter(description = "Optional keyword to filter skills by their title") @RequestParam(required = false) String search) {
 
         return ResponseEntity.ok(skillService.searchSkillsByTitle(search));

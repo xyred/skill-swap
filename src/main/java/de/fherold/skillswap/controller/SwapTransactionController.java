@@ -1,6 +1,6 @@
 package de.fherold.skillswap.controller;
 
-import de.fherold.skillswap.dto.SwapTransactionResponseDTO;
+import de.fherold.skillswap.dto.SwapTransactionResponseDto;
 import de.fherold.skillswap.exception.ErrorResponse;
 import de.fherold.skillswap.service.SkillService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,12 +32,12 @@ public class SwapTransactionController {
                description = "Returns a list of all skills a student has 'purchased'. Access is restricted to the student's own organization.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "History retrieved successfully",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = SwapTransactionResponseDTO.class)))),
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = SwapTransactionResponseDto.class)))),
         @ApiResponse(responseCode = "404", description = "Student not found or belongs to another tenant",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<SwapTransactionResponseDTO>> getStudentHistory(
+    public ResponseEntity<List<SwapTransactionResponseDto>> getStudentHistory(
             @Parameter(description = "ID of the student", example = "2")
             @PathVariable Long studentId) {
         return ResponseEntity.ok(skillService.getSwapHistoryByStudent(studentId));
