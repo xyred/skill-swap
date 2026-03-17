@@ -16,6 +16,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * This filter intercepts every incoming HTTP request to check for a JWT in the Authorization header.
+ * If a valid token is found, it extracts the username and tenantId, loads the user details, and sets the authentication in the Spring Security context.
+ * This allows the application to recognize the user and their tenant for the duration of the request, enabling multi-tenancy and role-based access control throughout the application.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
